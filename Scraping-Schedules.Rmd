@@ -1,0 +1,67 @@
+
+---
+title: "Web Scrape Spring 2020 Class Schedules"
+output: html_notebook
+---
+
+```{r}
+include <- function(library_name){
+  if( !(library_name %in% installed.packages()) )
+    install.packages(library_name) 
+  library(library_name, character.only=TRUE)
+}
+include("rvest")
+include("tidyr")
+include("tidyverse")
+
+#Function to Scrap a number of variables from a given url
+#Returning a tibble.
+read_class_schedule <-function(url){
+  
+  sched_html <- read_html(url)
+  
+  #Scrap the following variables from url  
+  Class_number <- sched_html %>% html_nodes("td.cat_num") %>%
+                html_text()
+  Section_number <- sched_html %>% html_nodes("td.sect") %>%
+                html_text()
+  Title <- sched_html%>% html_nodes("td.title") %>% 
+                html_text()
+  Instructors <- sched_html %>% html_nodes("td.Instructor") %>%
+                html_text()
+  Enrollment <- sched_html%>% html_nodes("td.enrtot") %>% 
+                html_text()
+  Type <- sched_html%>% html_nodes("td.comp") %>% 
+                html_text()
+  Seats <- sched_html%>% html_nodes("td.seatsavail") %>% 
+                html_text()
+  #Create tibble for each url passed into function
+  see <- tibble(class = Class_number, section = Section_number,  title = Title, 
+                instructor = Instructors, enrollment = Enrollment, 
+                type = Type, seats = Seats)
+}
+
+```
+
+Function Call
+
+```{r}
+#Store the url's into variables: 
+SP2019CS <- "http://ems.csuchico.edu/APSS/schedule/spr2019/CSCI.shtml"
+SP2020CS <- "http://ems.csuchico.edu/APSS/schedule/spr2020/CSCI.shtml"
+SP2019M  <- "http://ems.csuchico.edu/APSS/schedule/spr2019/MATH.shtml"
+SP2020M  <- "http://ems.csuchico.edu/APSS/schedule/spr2020/MATH.shtml"
+
+#Assigning tibbles to a variable upon function call
+a <- read_class_schedule(SP2020M)
+b <- read_class_schedule(SP2019CS)
+c <- read_class_schedule(SP2019M)
+d <- read_class_schedule(SP2020CS)
+
+#Joining all the tibbles together into 
+#the "complete_tibble"
+e <- full_join(a, b)
+f <- full_join(e, c)
+Complete_tibble <- full_join(f, d)
+
+```
